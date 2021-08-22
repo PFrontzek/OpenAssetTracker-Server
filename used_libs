@@ -1,0 +1,26 @@
+python license
+https://github.com/django/django BSD
+https://github.com/django/channels BSD-3
+https://github.com/jazzband/django-axes MIT
+https://github.com/django-compressor/django-compressor MIT
+https://github.com/jazzband/django-widget-tweaks MIT
+https://github.com/un33k/django-ipware MIT
+https://github.com/jazzband/django-redis MIT
+https://github.com/geopy/geopy MIT
+https://github.com/psf/requests Apache 2.0
+https://github.com/numpy/numpy BSD-3
+
+FRONTEND
+https://github.com/microsoft/TypeScript Apache 2
+https://github.com/twbs/bootstrap MIT
+https://github.com/Leaflet/Leaflet MIT
+https://www.openstreetmap.org/copyright ODbL
+https://opencellid.org/downloads.php 
+http://wiki.opencellid.org/wiki/Commercial_users
+https://datatables.net/faqs/index#Licensing MIT
+https://fonts.google.com/specimen/Roboto#about Apache 2.0
+https://github.com/jquery/jquery MIT
+https://github.com/popperjs/popper-core MIT
+https://fontawesome.com/license/free MIT / CC BY 4.0
+https://github.com/Eonasdan/tempus-dominus MIT
+https://github.com/moment/moment/ MIT

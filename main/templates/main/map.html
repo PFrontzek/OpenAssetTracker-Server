@@ -1,0 +1,333 @@
+{% comment %} 
+Copyright (C) 2021 Patrick Frontzek
+This file is part of OpenAssetTracker-Server.
+
+OpenAssetTracker-Server is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+OpenAssetTracker-Server is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with OpenAssetTracker-Server.  If not, see <http://www.gnu.org/licenses/>. 
+{% endcomment %}
+
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin="" />
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+
+<style>
+    body {
+        overflow-y: scroll;
+    }
+
+    .content-col {}
+
+    .card {
+        background-color: rgb(240, 240, 240);
+        transition: height 0.5s cubic-bezier(1, 0, 0, 1);
+    }
+
+    .card-header {
+        background-color: inherit;
+    }
+
+    .card-footer {
+        background-color: inherit;
+    }
+
+    .card-body {
+        background-color: white;
+        height: 100%;
+        max-height: 100%;
+        transition: max-height 0.5s cubic-bezier(1, 0, 0, 1);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .progress {
+        max-height: 0.5rem;
+        transition: max-height 0.5s cubic-bezier(1, 0, 0, 1);
+    }
+
+    .minimized {
+        max-height: 0 !important;
+    }
+
+    .footer {
+        padding: 0.25rem;
+        background-image: linear-gradient(to right, #3885c6, #0096cf, #00a6d2, #00b5d1, #00c3cd) !important;
+    }
+
+    .clickable {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="contentRow" class="row m-1 mt-3" style="margin-bottom: 2rem; transition: transform 1s; transform: scale(0);">
+    <div id="cardTracker" class="card col-lg-4 col-sm-12 mb-3 p-0">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-sm-12 input-group">
+                    <select id="trackerTableLength" class="custom-select input-group-prepend"></select>
+                    <input id="trackerTableSearch" type="text" class="form-control" placeholder="Filter...">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="progressTableTracker" class="progress rounded-0 minimized">
+            <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+        </div>
+        <div id="cardTrackerBody" class="card-body p-0 dataTables_wrapper dt-bootstrap4" style="overflow-y: scroll;">
+            <table id="trackerTable" class="table table-hover">
+                <thead class="text-nowrap">
+                    <tr>
+                        <th scope="col" class="clickable">Id</th>
+                        <th scope="col" class="clickable">Alias</th>
+                        <th scope="col" class="clickable">Akku</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot class="">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Alias</th>
+                        <th scope="col">Akku</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-sm-12 d-flex justify-content-center">
+                    <div id="trackerTableInfo" class="dataTables_info"></div>
+                </div>
+                <div class="col-sm-12 d-flex justify-content-center">
+                    <div id="trackerTablePaginate" class="dataTables_paginate paging_numbers"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="col-lg-8 col-sm-12 mb-3 p-0 pl-lg-3" style="height: 60vh">
+        <div class="card shadow" style="height: 100%">
+            <div id="karte" class="card-body p-0"></div>
+        </div>
+    </div>
+
+    <div id="cardStatus" class="card col-12 mb-3 p-0 shadow">
+        <div class="card-header">
+            <div class="row">
+                <div id="statusTableButtons" class="col-12 btn-group mb-2"></div>
+                <div id="prevStatusBttn"></div>
+                <div class="col-sm-12 input-group">
+                    <select id="statusTableLength" class="custom-select input-group-prepend"></select>
+                    <input id="statusTableSearch" type="text" class="form-control" placeholder="Filter...">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+                {% if debug %}
+                <div class="col-12 mt-2">
+                    <div class="input-group">
+                        <div id="dateTimePickerStart"></div>
+                        <div id="dateTimePickerSeperator"></div>
+                        <div id="dateTimePickerEnd"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div id="progressTableStatus" class="progress rounded-0">
+            <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+        </div>
+        <div id="cardStatusBody" class="card-body p-0 dataTables_wrapper dt-bootstrap4 minimized"
+            style="overflow-y: scroll;">
+            <table id="statusTable" class="table table-hover">
+                <thead class="text-nowrap">
+                    <tr>
+                        <th scope="col" class="clickable">Zeitpunkt</th>
+                        <th scope="col" class="clickable">Land</th>
+                        <th scope="col" class="clickable">Stadt</th>
+                        <th scope="col" class="clickable">Funkmasten</th>
+                        <th scope="col" class="clickable">Temperatur</th>
+                        <th scope="col" class="clickable">Akku</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot class="">
+                    <tr>
+                        <th scope="col">Zeitpunkt</th>
+                        <th scope="col">Land</th>
+                        <th scope="col">Stadt</th>
+                        <th scope="col">Funkmasten</th>
+                        <th scope="col">Temperatur</th>
+                        <th scope="col">Akku</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-sm-12 d-flex justify-content-center">
+                    <div id="statusTableInfo" class="dataTables_info"></div>
+                </div>
+                <div class="col-sm-12 d-flex justify-content-center">
+                    <div id="statusTablePaginate" class="dataTables_paginate paging_numbers"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if debug %}
+<div style="height: 3rem;"></div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript"
+    src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript"
+    src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap4.min.js"></script>
+<script type="text/javascript"
+    src="https://cdn.datatables.net/searchpanes/1.0.1/js/dataTables.searchPanes.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+
+<script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+{#<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.bootstrap4.min.js"></script>#}
+<script>
+    {% if debug %}
+    let debug = true;
+    {% else %}
+    let debug = false;
+    {% endif %}
+    let urlTableData = "{% url "tabledata" %}";
+    let urlDeviceBase = "{% url "device_base" %}";
+    let urlDetail = "{% url "detail" %}";
+    let urlTrackerSettings = "{% url "trackerData_base" %}"
+    let requestUserId = {{ request.user.id }};
+    let token = '{{csrf_token}}';
+</script>
+<script type="text/javascript" src={% static 'main/map.js' %}></script>
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="modalTrackerEdit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tracker bearbeiten</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="progress" id="modalFormTrackerEditProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                        style="width: 100%"></div>
+                </div>
+                <form id="modalFormTrackerEdit" class="minimized p-1"
+                    style="overflow: hidden; transition: max-height 0.5s; max-height: 16rem;">
+                    <div class="form-group">
+                        <label for="modalFormTrackerEditImei" class="col-form-label">IMEI:</label>
+                        <input type="text" class="form-control" id="modalFormTrackerEditImei" name="imei"
+                            readonly="true">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalFormTrackerEditAlias" class="col-form-label">Alias:</label>
+                        <input type="text" class="form-control" id="modalFormTrackerEditAlias" name="alias">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">Wartezeit:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="modalFormTrackerEditWaittime"
+                                name="sleeptime" />
+                            <select class="custom-select input-group-append" id="modalFormTrackerEditWaittimeUnit"
+                                name="sleeptime_unit">
+                                <option value="1">Sekunden</option>
+                                <option value="60">Minuten</option>
+                                <option value="3600">Stunden</option>
+                                <option value="86400">Tage</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="bttnModalTrackerCancel" type="button" class="btn btn-secondary"
+                    data-dismiss="modal">Abbrechen</button>
+                <button id="bttnModalTrackerSave" type="button" class="btn btn-primary disabled">Speichern</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" id="mapModal">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="modalKarte" class="bg-dark" style="height: 70vh;">
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button id="bttnModalMapPrevious" type="button" class="btn btn-primary"><i class="fa fa-chevron-left"
+                        aria-hidden="true"></i>
+                </button>
+                <span id="modalMapTimestamp">01.01.2020 - 00:00</span>
+                <button id="bttnModalMapNext" type="button" class="btn btn-primary"><i class="fa fa-chevron-right"
+                        aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock modals %}
+
+
+{% block footer %}
+{% if debug %}
+<footer class="footer fixed-bottom border-top border-dark shadow-lg">
+    <div class="container d-flex justify-content-between">
+        <button id="bttnModalTrackerOpen" class="btn btn-primary border-dark disabled">Tracker Details <i
+                class='fas fa-edit'></i></button>
+        <button id="bttnModalMapOpen" class="btn btn-primary border-dark disabled">Karte <i class="fa fa-arrows-alt"
+                aria-hidden="true" style="transform: rotate(45deg);"></i></button>
+    </div>
+</footer>
+
+{% endif %}
+{% endblock footer %}

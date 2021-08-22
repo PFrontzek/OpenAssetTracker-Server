@@ -1,0 +1,49 @@
+{% comment %} 
+Copyright (C) 2021 Patrick Frontzek
+This file is part of OpenAssetTracker-Server.
+
+OpenAssetTracker-Server is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+OpenAssetTracker-Server is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with OpenAssetTracker-Server.  If not, see <http://www.gnu.org/licenses/>. 
+{% endcomment %}
+
+{% load static %}
+
+<nav class="navbar justify-content-between shadow p-2 mb-0">
+        <a href="/" class="navbar-brand bg-white rounded"{% if auth %} style="visibility: hidden;" {% endif %}><img src="{% static "main/img/logo_.png" %}" height="30" class="d-inline-block align-top"/></a>
+                {% if request.user.is_authenticated %}
+                    {% if debug %}
+                        <a class="btn btn-danger" href="{% url "debug" %}">Debug</a>
+                        {% endif %}
+                <div class="btn-group">
+                <button class="btn btn-primary" type="button">
+                       {{ request.user.username }}
+                </button>
+                    <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profileDropdown">
+                    {% if request.user.is_staff %}
+                        <a href="{% url "admincontrol" %}" class="dropdown-item">Verwaltung</a>
+                        <a href="{% url "auth:create_user" %}" class="dropdown-item">Benutzer anlegen</a>
+                        {% if debug %}<a href="/admin" class="dropdown-item">Admin</a>{% endif %}
+                        <a href="{% url "debug" %}" class="dropdown-item">Debug</a>
+<div class="dropdown-divider"></div>
+                        {% endif %}
+                    <a href="{% url "auth:logout" %}" class="dropdown-item">Logout</a>
+                </div>
+                </div>
+
+                {% else %}
+                <a href="{% url "auth:login" %}" class="btn btn-success">Login</a>
+                {% endif %}
+</nav>

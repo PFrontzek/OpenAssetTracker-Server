@@ -1,0 +1,163 @@
+{% comment %} 
+Copyright (C) 2021 Patrick Frontzek
+This file is part of OpenAssetTracker-Server.
+
+OpenAssetTracker-Server is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+OpenAssetTracker-Server is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with OpenAssetTracker-Server.  If not, see <http://www.gnu.org/licenses/>. 
+{% endcomment %}
+
+{% extends "main/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="row">
+    <div class="col-6 mb-3">
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-header text-center">
+                    <span class="card-title">Benutzerverwaltung</span>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="userSelectUser">Benutzer</label>
+                        <select id="userSelectUser" class="custom-select">
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="userSelectTracker">Tracker</label>
+                        <select id="userSelectTracker" class="custom-select" multiple>
+                        {% for device in devices %}
+                            <option value="{{ device.sn }}">{{ device }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="userIsStaff" {% if request.user.is_staff %}checked{% endif %}>
+                        <label class="custom-control-label" for="userIsStaff">Ist Mitarbeiter</label>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-success ">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-6 mb-3">
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-header text-center">
+                    <span class="card-title">Trackerverwaltung</span>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="trackerSelectTracker">Tracker</label>
+                        <select id="trackerSelectTracker" class="custom-select">
+                        <option value="-1" selected>Neuer Tracker</option>
+                            {% for device in devices %}
+                                <option value="{{ device.sn }}">{{ device }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trackerAlias">Alias</label>
+                        <input type="text" class="form-control" id="trackerAlias" placeholder="Alias ...">
+                    </div>
+                    <div class="form-group">
+                        <label for="trackerImei">IMEI</label>
+                        <input type="number" class="form-control" id="trackerImei" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label for="trackerSelectUser">Benutzer</label>
+                        <select id="trackerSelectUser" class="custom-select" multiple>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trackerSleeptime">Wartezeit</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="trackerSleeptime">
+                            <div class="input-group-append">
+                                <select class="custom-select" id="trackerSleeptimeUnit">
+                                    {% for value, unit in sleeptimeUnits %}
+                                        <option value="{{ value }}">{{ unit }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-success ">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <form method="post">
+                <div class="card-header text-center">
+                    <span class="card-title">Benutzer anlegen</span>
+                </div>
+                <div class="card-body">
+                        {% csrf_token %}
+                        {% with WIDGET_ERROR_CLASS='is-invalid' %}
+                            {% for field in usercreationform.visible_fields %}
+                                <div class="form-group">
+                                    <label for="{{ field.id }}">{{ field.label }}</label>
+                                    {% render_field field class+="form-control" %}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback">{{ field.errors }}</div>
+                                    {% endif %}
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-outline-info ">Erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+trackerSelectTracker = $("#trackerSelectTracker");
+trackerSelectUser = $("#trackerSelectUser");
+trackerAlias = $("#trackerAlias");
+trackerImei = $("#trackerImei");
+trackerSleeptime = $("#trackerSleeptime");
+trackerSleeptimeUnit = $("#trackerSleeptimeUnit");
+
+trackerSelectTracker.change(() => {
+    $.ajax({% url "trackerData_base" %} + trackerSelectTracker.val()).done((data) => {
+        trackerAlias.val(data["alias"]);
+        trackerImei.val(data["imei"]);
+        trackerSleeptime.val(data["sleeptime"]);
+        trackerSleeptimeUnit.val(data["sleeptime_unit"]);
+        trackerSelectUser.val(data["users"]).attr("selected", true);
+    });
+});
+</script>
+{% endblock %}

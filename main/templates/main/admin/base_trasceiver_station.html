@@ -1,0 +1,44 @@
+{% extends "admin/change_form.html" %}
+{% load l10n %}
+
+{% block extrahead %}
+{{ block.super }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin=""/>
+{% endblock %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <div id="karte" class="" style="width: 98%; height: 300px; margin-left: auto; margin-right: auto"></div>
+
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin=""></script>
+    {% localize off %}
+<script>
+
+
+    let map = L.map('karte').setView([{{ location.latitude }}, {{ location.longitude }}], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.marker([{{ location.latitude }}, {{ location.longitude }}], {title: "BTS"}).addTo(map);
+    {% if bts %}
+        L.marker([{{ bts.latitude }}, {{ bts.longitude }}], {title: "BTS 2"}).addTo(map);
+    {% endif %}
+    {% for cell in cells %}
+          L.marker([{{ cell.latitude }}, {{ cell.longitude }}], {title: "{{ cell.title }}", opacity: 0.75}).addTo(map);
+          L.circle([{{ cell.latitude }}, {{ cell.longitude }}],  {
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.3,
+                        radius: {{ cell.range }}
+                    }).addTo(map);
+    {% endfor %}
+
+    </script>
+    {% endlocalize %}
+{% endblock %}

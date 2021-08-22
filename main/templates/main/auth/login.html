@@ -1,0 +1,50 @@
+{% comment %} 
+Copyright (C) 2021 Patrick Frontzek
+This file is part of OpenAssetTracker-Server.
+
+OpenAssetTracker-Server is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+OpenAssetTracker-Server is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with OpenAssetTracker-Server.  If not, see <http://www.gnu.org/licenses/>. 
+{% endcomment %}
+
+{% extends "main/auth/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+
+{% block card %}
+    <form method="post">
+<div class="card-body">
+        {% csrf_token %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+{% for field in form.visible_fields %}
+            <div class="form-group">
+            <label for="{{ field.id }}">{{ field.label }}</label>
+            {% render_field field class+="form-control" %}
+            {% if field.errors %}
+            <div class="invalid-feedback">
+        {{ field.errors }}
+      </div>
+            {% endif %}
+            {% if field.help_text %}
+        <small class="form-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+            </div>
+        {% endfor %}
+{% endwith %}
+</div>
+    <div class="card-footer">
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
+<a class="btn btn-outline-primary btn-block" role="button" href="{% url "auth:password_reset" %}">Passwort vergessen</a>
+</div>
+  </form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@types/bootstrap": "^4.5.0",
+    "@types/datatables.net": "^1.10.19",
+    "@types/datatables.net-buttons": "^1.4.3",
+    "@types/datatables.net-select": "^1.2.6",
+    "@types/jquery": "^3.5.1",
+    "@types/leaflet": "^1.5.17",
+    "moment-timezone": "^0.5.31",
+    "tempusdominus": "^5.15.2",
+    "tempusdominus-bootstrap": "^5.32.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc main/static/main/usercreation.ts",
+    "collectstatic": "tsc main/static/main/*.ts && docker-compose run --rm gunicorn python manage.py collectstatic --noinput"
+  },
+  "author": "",
+  "license": "ISC"
+}

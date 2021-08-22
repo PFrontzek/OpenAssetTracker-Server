@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  frontend:
+    container_name: open_asset_tracker_frontend
+    image: nginx:1.15-alpine
+    ports:
+    - "80"
+    - "443"
+    - "8080"
+    volumes:
+    - ./nginx.conf:/etc/nginx/conf.d/app.conf
+    - ./static:/var/www/static
+  gunicorn:
+    container_name: open_asset_tracker_gunicorn
+    build: .
+    image: open_asset_tracker_server
+    command: gunicorn --bind=0.0.0.0:8000 --reload Server.wsgi:application
+    env_file:
+      - dev.env
+    volumes:
+      - .:/code
+    expose:
+      - 8000
+    restart: always
+  uvicorn:
+    container_name: open_asset_tracker_uvicorn
+    build: .
+    image: open_asset_tracker_server
+    command: uvicorn --host 0.0.0.0 --port 8001 --reload Server.asgi:application
+    env_file:
+      - dev.env
+    volumes:
+      - .:/code
+    expose:
+      - 8001
+    restart: always
+networks: 
+  default:
+    external: 
+      name: MyNetwork

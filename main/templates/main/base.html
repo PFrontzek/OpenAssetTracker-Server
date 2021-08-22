@@ -1,0 +1,60 @@
+{% comment %} 
+Copyright (C) 2021 Patrick Frontzek
+This file is part of OpenAssetTracker-Server.
+
+OpenAssetTracker-Server is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+OpenAssetTracker-Server is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with OpenAssetTracker-Server.  If not, see <http://www.gnu.org/licenses/>. 
+{% endcomment %}
+
+{% load static %}
+{% load compress %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+<link rel="shortcut icon" type="image/png" href="{% static 'main/img/favicon.png' %}"/>
+<link rel="manifest" href="{% url "webmanifest" %}">
+<link href="{% static "fontawesome/css/all.css" %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link type="text/css" href="{% static 'bootstrap/dist/css/bootstrap.css' %}" rel="stylesheet" media="screen">
+    {% block head %}{% endblock %}
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+</head>
+<body class="">
+{% include "main/_navbar.html" %}
+<main class="container-fluid pl-0 pr-0 pt-0" style="overflow: hidden">
+<div class="row">
+<div class="col-sm-1 d-block"></div>
+<div class="col-sm-10 content-col">
+{% include "main/_messages.html" with messages=messages %}
+    {% block content %}
+    {% endblock %}
+</div>
+<div class="col-sm-1 d-block"></div>
+</div>
+</main>
+{% block footer %}
+{% endblock footer %}
+<div id="modalContainer">
+{% block modals %}{% endblock modals %}
+</div>
+{% include "main/_footer.html" %}
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+{% block javascript %}{% endblock %}
+</body>
+</html>
