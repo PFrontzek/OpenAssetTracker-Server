@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
 ]
 
-OPEN_CELL_ID_TOKEN = "***REMOVED***"
+OPEN_CELL_ID_TOKEN = "xxxxxxxxxxxx"
 
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesBackend",
